@@ -1,0 +1,147 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>JS Question 4</title>
+	<link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<script type="text/javascript">
+	// 読み込んだデータを1行ずつ格納する配列
+	var allData = [];
+	var sW,sH,s;
+	var now_question = 0;
+	if (window.File && window.FileReader && window.FileList && window.Blob) {
+  	//alert('JS対応');
+	} else {
+  	alert('JS未対応のブラウザです。たぶん動作しません');
+	}
+
+	loadCSV("./data.csv");
+	setTimeout("setQuestion(now_question)", 10);//ms //一瞬間隔がないとダメみたい
+
+	//ウィンドウサイズを取得する
+	function getWindowSize() {
+		sW = window.innerWidth;
+		sH = window.innerHeight;
+	}
+
+	function setQuestion(number){
+		document.getElementById("id_question").innerHTML=allData[number].question;
+		document.getElementById("id_ChoiceA").innerHTML=allData[number].A;
+		document.getElementById("id_ChoiceB").innerHTML=allData[number].B;
+		document.getElementById("id_ChoiceC").innerHTML=allData[number].C;
+		document.getElementById("id_ChoiceD").innerHTML=allData[number].D;
+		if(allData[now_question].Q_gazo != 'none'){
+			mondairesize();
+			document.getElementById("id_mondaigazo").src='./gazo/'+allData[now_question].Q_gazo;
+		}else{
+			document.getElementById("id_mondaigazo").scr='';
+			document.getElementById("id_mondaigazo").width=0;
+		}
+		document.getElementById("id_pf").innerHTML='';
+		document.getElementById("id_kotae").innerHTML='';
+		document.getElementById("id_mondaigazo").scr='';
+		document.getElementById("id_kaitougazo").src='';
+	}
+
+	function next_question(){
+		//現状ではループさせている
+		if(allData.length-1 > now_question){
+			now_question++;
+		}else{
+			now_question = 0;
+		}
+		setQuestion(now_question);
+	}
+
+	function kaitouresize(){
+		getWindowSize();
+		document.getElementById("id_kaitougazo").width=sW;
+	}
+	function mondairesize(){
+		getWindowSize();
+		document.getElementById("id_mondaigazo").width=sW;
+	}
+
+	function myCheck(){
+		var seikai = allData[now_question].ANS;
+		var kaitou = '';
+
+		if(document.form1.elements[0].checked){
+			kaitou = kaitou + 'A';
+		}
+		if(document.form1.elements[1].checked){
+			kaitou = kaitou + 'B';
+		}
+		if(document.form1.elements[2].checked){
+			kaitou = kaitou + 'C';
+		}
+		if(document.form1.elements[3].checked){
+			kaitou = kaitou + 'D';
+		}
+
+		if(kaitou == seikai){
+			document.getElementById("id_pf").innerHTML='正解です';
+		}else{
+			// 不正解の時は背景色を変えたい
+			document.getElementById("id_pf").innerHTML='不正解です';
+		}
+		getWindowSize();
+		document.getElementById("id_kotae").innerHTML=seikai;
+		document.getElementById("id_kaitougazo").width=sW;
+		if(allData[now_question].A_gazo != 'none'){
+			document.getElementById("id_kaitougazo").src='./gazo/'+allData[now_question].A_gazo;
+		}
+	}
+
+	function loadCSV(targetFile) {
+		var request = new XMLHttpRequest();
+		request.open("get", targetFile, false);
+		request.send(null);
+		var csvData = request.responseText;
+		var lines = csvData.split("\n");
+		for (var i = 0; i < lines.length; i++) {
+			var wordSet = lines[i].split(",");
+			var wordData = {
+				question: wordSet[0],
+				A: wordSet[1],
+				B: wordSet[2],
+				C: wordSet[3],
+				D: wordSet[4],
+				ANS: wordSet[5],
+				Q_gazo: wordSet[6],
+				A_gazo: wordSet[7],
+			};
+			allData.push(wordData);
+		}
+}
+
+</script>
+<body>
+	<section>
+		<hgroup>
+			<h1>JS Question</h1>
+		</hgroup>
+		<section class="section-sub">
+			<h4>問題</h4>
+			<P id='id_question'>起動中</P>
+			<img src="" alt="" id="id_mondaigazo" width="100" onclick="mondairesize();" />
+			<form name="form1">
+				<input type="checkbox" name="questions" value="A"><label id='id_ChoiceA'>A:選択肢A</label><br>
+  			<input type="checkbox" name="questions" value="B"><label id='id_ChoiceB'>B:選択肢B</label><br>
+  			<input type="checkbox" name="questions" value="C"><label id='id_ChoiceC'>C:選択肢C</label><br>
+  			<input type="checkbox" name="questions" value="D"><label id='id_ChoiceD'>D:選択肢D</label><br>
+  			<input type="button" value="解答" onclick="myCheck();">
+			</form>
+		</section>
+		<section class="section-sub">
+			<h4>解答</h4>
+			<p id='id_pf'>-</p>
+			<p id='id_kotae'>-</p>
+			<img src="" alt="" id="id_kaitougazo" width="100" onclick="kaitouresize()" />
+			<form name="form2">
+  			<input type="button" value="次の問題へ" onclick="next_question()" >
+			</form>
+		</section>
+		<p>画像をクリックでサイズウィンドウ横幅に合わせます</p>
+</body>
